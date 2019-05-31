@@ -256,7 +256,7 @@ void do_my_tests() {
 	simple4(10000000, 41297687, false);
 }
 
-void stable_test(size_t c = 1000) {
+void stable_test(size_t c = 10) {
 	for (size_t i = 0; i < c; ++i){
 		combo_simple1(1000, 100, false);
 		combo_simple_shufted1(1000, 5, 100, false);
@@ -267,11 +267,11 @@ void stable_test(size_t c = 1000) {
 	}
 }
 
-int main() {
+void test() {
 	_CrtMemState _ms;
 	_CrtMemCheckpoint(&_ms);
 	do_my_tests();
-	//stable_test();
+	stable_test();
 	_CrtMemDumpAllObjectsSince(&_ms);
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
 	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);

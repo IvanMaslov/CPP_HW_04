@@ -147,7 +147,6 @@ bool HaffmanCompressor::try_decompress_codes(pair<void*, size_t> arg)
 	if(decompressing)
 		return false;
 	decompressing = true;
-	compressing = false;
 
 	if (arg.second != Wall)
 		return false;
@@ -185,7 +184,8 @@ bool HaffmanCompressor::try_decompress_codes(pair<void*, size_t> arg)
 		dfs_clear(result);
 		return false;
 	}
-	__DEBUG__ISOMORPH(result, res_cop);
+	if(compressing)
+		__DEBUG__ISOMORPH(result, res_cop);
 	dfs_clear(res_cop);
 	return true;
 }
@@ -195,7 +195,7 @@ pair<void*, size_t> HaffmanCompressor::decompress(pair<void*, size_t> arg)
 	if(!try_decompress_codes(_mp(arg.ref, Wall))) throw new exception("ERROR: decompress() failed");
 	return decompress_chunk(_mp((void*)(((char*)arg.ref) + Wall), arg.siz - Wall));
 }
-
+#include <iostream>
 pair<void*, size_t> HaffmanCompressor::decompress_chunk(pair<void*, size_t> arg)
 {
 	size_t len = ((size_t*)(arg.ref))[0];
