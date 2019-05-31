@@ -11,6 +11,7 @@ class HaffmanCompressor
 	bitset<WW> res_tree;
 	vector<char> res_char;
 	bool decompressing = false;
+	bool compressing = false;
 	struct node {
 		node* l, * r;
 		size_t count;

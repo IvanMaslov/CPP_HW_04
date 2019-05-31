@@ -2,8 +2,12 @@
 #include <cassert>
 #include <cstring>
 
+#ifdef _DEBUG
+#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
+#endif
+
 #include "HaffmanCompressor.h"
-#include "Test.h"
 
 void short_code(pair<void*, size_t> a, bool out = true) {
 	HaffmanCompressor c;
@@ -20,6 +24,7 @@ void short_code(pair<void*, size_t> a, bool out = true) {
 	}
 	std::cerr << std::endl;
 	delete[] r.first;
+	delete[] rtt.first;
 }
 
 
@@ -70,6 +75,7 @@ void combo_test(pair<void*, size_t> a, size_t chunk, bool out = true) {
 	}
 	std::cerr << std::endl;
 	delete[] r.first;
+	delete[] rtt.first;
 }
 
 
@@ -127,6 +133,7 @@ void combo_test_asyncchunks(pair<void*, size_t> a, vector<size_t> chunk, bool ou
 	}
 	std::cerr << std::endl;
 	delete[] r.first;
+	delete[] rtt.first;
 }
 
 
@@ -250,11 +257,23 @@ void do_my_tests() {
 }
 
 void stable_test(size_t c = 1000) {
-	for (size_t i = 0; i < c; ++i)
-		do_my_tests();
+	for (size_t i = 0; i < c; ++i){
+		combo_simple1(1000, 100, false);
+		combo_simple_shufted1(1000, 5, 100, false);
+	
+		simple2(255, false);
+		simple3(256, 144, false);
+		simple4(256, 27342, false);
+	}
 }
 
 int main() {
+	_CrtMemState _ms;
+	_CrtMemCheckpoint(&_ms);
 	do_my_tests();
 	//stable_test();
+	_CrtMemDumpAllObjectsSince(&_ms);
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
+	_CrtDumpMemoryLeaks();
 }
