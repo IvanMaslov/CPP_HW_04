@@ -75,14 +75,14 @@ void compress(string in_name, string out_name, size_t chunksize = 1024) {
 			std::pair<void*, size_t> res = compressor.compress_chunk(std::make_pair(buf, bufsize));
 			outfile.write(static_cast<const char*>(res.first), res.second);
 			bufsize = 0;
-			delete[] res.first;
+			delete[] (char*)res.first;
 		}
 	}
 	if (bufsize) {
 		std::pair<void*, size_t> res = compressor.compress_chunk(std::make_pair(buf, bufsize));
 		outfile.write(static_cast<const char*>(res.first), res.second);
 		bufsize = 0;
-		delete[] res.first;
+		delete[](char*)res.first;
 	}
 
 	delete[] buf;
@@ -146,7 +146,7 @@ void newdecompress(string in_name, string out_name, size_t chunksize = 1024) {
 			}
 			outfile.write(static_cast<const char*>(res.first), res.second);
 			bufsize = 0;
-			delete[] res.first;
+			delete[](char*)res.first;
 		}
 	}
 	if (bufsize) {
@@ -160,7 +160,7 @@ void newdecompress(string in_name, string out_name, size_t chunksize = 1024) {
 		}
 		outfile.write(static_cast<const char*>(res.first), res.second);
 		bufsize = 0;
-		delete[] res.first;
+		delete[] (char*)res.first;
 	}
 
 	//delete[] buf;
@@ -248,7 +248,7 @@ int Util(int argc, char* argv[]) {
 			decompress(argv[2], argv[3]);
 		}
 		if (strcmp(argv[1], "--mode=debug") == 0) {
-			size_t size = 1337 * 228;
+			size_t size = 1488 * 322;
 			//std::cerr << "len: " << size << " : " ;
 			fillfile(argv[2], size);
 			compress(argv[2], "temp");
@@ -260,7 +260,7 @@ int Util(int argc, char* argv[]) {
 	std::cerr << "WRONG OPETION: " << argc << " arguments do not supported" << std::endl;
 	return 0;
 }
-
+/*
 #ifdef _DEBUG
 #include <crtdbg.h>
 #define _CRTDBG_MAP_ALLOC
@@ -274,12 +274,12 @@ void testUtil(int argc, char* argv[]) {
 	_CrtMemState _ms;
 	_CrtMemCheckpoint(&_ms);
 	_CrtMemDumpAllObjectsSince(&_ms);
-
+	std::cerr << "LEAKs";
 	Util(argc, argv);
 
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
 	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
 	_CrtDumpMemoryLeaks();
 }
-
-int main(int argc, char* argv[]) { testUtil(argc, argv); }
+*/
+int main(int argc, char* argv[]) { Util(argc, argv); }

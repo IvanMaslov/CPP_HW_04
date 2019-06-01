@@ -20,7 +20,7 @@ class HaffmanCompressor
 		char val;
 		char rang;
 		node() {
-			rang = count = val = 0;
+			rang = val = count = 0;
 			l = r = nullptr;
 			count = 1;
 		}

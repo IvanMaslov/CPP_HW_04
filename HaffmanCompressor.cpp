@@ -65,8 +65,8 @@ pair<void*, size_t> HaffmanCompressor::compress(pair<void*, size_t> arg) {
 	char* res = new char[res1.siz + res2.siz];
 	memcpy(res, res1.ref, res1.siz);
 	memcpy(res + res1.siz, res2.ref, res2.siz);
-	delete[] res1.ref;
-	delete[] res2.ref;
+	delete[](char*)res1.ref;
+	delete[](char*)res2.ref;
 	return _mp(res, res1.siz + res2.siz);
 }
 
@@ -74,7 +74,7 @@ void HaffmanCompressor::add_chunk(pair<void*, size_t> arg)
 {
 	if (compressing)
 		throw new runtime_error("ERROR: add_chunk() while compressing");
-	for (int i = 0; i < arg.siz; ++i)
+	for (size_t i = 0; i < arg.siz; ++i)
 		++(cnt[(((char*)arg.ref)[i]) + 128]->count);
 }
 
@@ -136,7 +136,7 @@ pair<void*, size_t> HaffmanCompressor::compress_chunk(pair<void*, size_t> arg)
 	if (size_bf != 8)
 		ans.push_back(bf);
 	else size_bf = 0;
-	void* res = new char[sizeof(size_t) + ans.size()];
+	char* res = new char[sizeof(size_t) + ans.size()];
 	((size_t*)res)[0] = static_cast<size_t>((ans.size() << 3) - size_bf);
 	char* res_ = (char*)(((size_t*)(res)) + 1);
 	for (size_t u = 0; u < ans.size(); ++u)
@@ -219,7 +219,7 @@ pair<void*, size_t> HaffmanCompressor::decompress_chunk(pair<void*, size_t> arg)
 	}
 	char* res = new char[ans.size()];
 	for (size_t i = 0; i < ans.size(); ++i)
-		res[i] = ans[i] - 128;
+		res[i] = static_cast<char>(ans[i] - 128);
 	return _mp(res, ans.size());
 }
 
@@ -272,8 +272,8 @@ pair<void*, size_t> HaffmanCompressor::decompress_data(pair<void*, size_t> arg)
 		auto c = decompress_chunk(make_pair(dat, Y + sizeof(size_t)));
 		for (size_t i = 0; i < c.second; ++i)
 			ans.push_back(static_cast<char*>(c.first)[i]);
-		delete[] c.first;
-		delete[] dat;
+		delete[] (char*)c.first;
+		delete[] (char*)dat;
 	}
 	char* e = new char[ans.size()];
 	for (size_t i = 0; i < ans.size(); ++i)
