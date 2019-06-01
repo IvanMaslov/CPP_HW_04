@@ -266,7 +266,7 @@ void stable_test(size_t c = 10) {
 	}
 }
 
-void test() {
+void testLib() {
 	_CrtMemState _ms;
 	_CrtMemCheckpoint(&_ms);
 	do_my_tests();
@@ -277,4 +277,4 @@ void test() {
 	_CrtDumpMemoryLeaks();
 }
 
-//int main() { test(); }
+//int main() { testLib(); }

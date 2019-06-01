@@ -73,7 +73,7 @@ pair<void*, size_t> HaffmanCompressor::compress(pair<void*, size_t> arg) {
 void HaffmanCompressor::add_chunk(pair<void*, size_t> arg)
 {
 	if (compressing)
-		throw new exception("ERROR: add_chunk() while compressing");
+		throw new runtime_error("ERROR: add_chunk() while compressing");
 	for (int i = 0; i < arg.siz; ++i)
 		++(cnt[(((char*)arg.ref)[i]) + 128]->count);
 }
@@ -81,7 +81,7 @@ void HaffmanCompressor::add_chunk(pair<void*, size_t> arg)
 pair<void*, size_t> HaffmanCompressor::prepare()
 {
 	if (compressing)
-		throw new exception("ERROR: prepare() used second time");
+		throw new runtime_error("ERROR: prepare() used second time");
 	compressing = true;
 	set<pair<pair<size_t, char>, node*>> s;
 	for (size_t i = 0; i < W; ++i) {
@@ -118,7 +118,7 @@ pair<void*, size_t> HaffmanCompressor::prepare()
 pair<void*, size_t> HaffmanCompressor::compress_chunk(pair<void*, size_t> arg)
 {
 	if (!compressing)
-		throw new exception("ERROR: compress_chunk() without preparing");
+		throw new runtime_error("ERROR: compress_chunk() without preparing");
 	vector<char> ans;
 	char bf = 0;
 	char size_bf = 8;
@@ -152,8 +152,8 @@ bool HaffmanCompressor::try_decompress_codes(pair<void*, size_t> arg)
 
 	if (arg.second != Wall)
 		return false;
-
-	node* res_cop = result; result = nullptr;
+	dfs_clear(result);
+	//node* res_cop = result; result = nullptr;
 
 	result = new node();
 	vector<node*> st;
@@ -181,22 +181,21 @@ bool HaffmanCompressor::try_decompress_codes(pair<void*, size_t> arg)
 			c->val = (((char*)(arg.ref))[WWbit + cnt_alph++]);
 		}
 	}
-
 	if (cnt_alph != W) {
 		dfs_clear(result);
 		return false;
 	}
 #ifdef _DEBUG
-	if(compressing)
-		__DEBUG__ISOMORPH(result, res_cop);
+	//if(compressing)
+	//	__DEBUG__ISOMORPH(result, res_cop);
 #endif
-	dfs_clear(res_cop);
+	//dfs_clear(res_cop);
 	return true;
 }
 
 pair<void*, size_t> HaffmanCompressor::decompress(pair<void*, size_t> arg)
 {
-	if(!try_decompress_codes(_mp(arg.ref, Wall))) throw new exception("ERROR: decompress() failed");
+	if(!try_decompress_codes(_mp(arg.ref, Wall))) throw new runtime_error("ERROR: decompress() failed");
 	return decompress_chunk(_mp((void*)(((char*)arg.ref) + Wall), arg.siz - Wall));
 }
 #include <iostream>
@@ -204,7 +203,7 @@ pair<void*, size_t> HaffmanCompressor::decompress_chunk(pair<void*, size_t> arg)
 {
 	size_t len = ((size_t*)(arg.ref))[0];
 	if (len / 8 + (len % 8 != 0) != arg.siz - sizeof(size_t))
-		throw new exception("ERROR: decompress_chunk with different length");
+		throw new runtime_error("ERROR: decompress_chunk with different length");
 	vector<char> ans;
 	node* cur = result;
 	for (size_t i = 0; i < len; ++i) {
@@ -226,6 +225,8 @@ pair<void*, size_t> HaffmanCompressor::decompress_chunk(pair<void*, size_t> arg)
 
 pair<void*, size_t> HaffmanCompressor::decompress_data(pair<void*, size_t> arg)
 {
+	if (compressing)
+		throw runtime_error("ERROR: decompress_data() while compressing");
 	for (size_t i = 0; i < arg.siz; ++i)
 		q.push_back(static_cast<char*>(arg.ref)[i]);
 	if (!decompressing) {
@@ -236,7 +237,7 @@ pair<void*, size_t> HaffmanCompressor::decompress_data(pair<void*, size_t> arg)
 				q.pop_front();
 			}
 			if(!try_decompress_codes(make_pair(t, sizeof(t)))){
-				throw exception("ERROR: No valid prepared data");
+				throw runtime_error("ERROR: No valid prepared data");
 			}
 		}
 		else {
@@ -272,6 +273,7 @@ pair<void*, size_t> HaffmanCompressor::decompress_data(pair<void*, size_t> arg)
 		for (size_t i = 0; i < c.second; ++i)
 			ans.push_back(static_cast<char*>(c.first)[i]);
 		delete[] c.first;
+		delete[] dat;
 	}
 	char* e = new char[ans.size()];
 	for (size_t i = 0; i < ans.size(); ++i)

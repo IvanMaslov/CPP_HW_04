@@ -2,6 +2,7 @@
 #include <vector>
 #include <bitset>
 #include <queue>
+#include <iostream>
 using namespace std;
 class HaffmanCompressor
 {
@@ -28,6 +29,10 @@ class HaffmanCompressor
 			l = r = nullptr;
 			count = 1;
 		}
+		~node() {
+			delete l;
+			delete r;
+		}
 	};
 	node* cnt[W];
 	node* result;
@@ -37,12 +42,14 @@ class HaffmanCompressor
 public:
 	static const size_t Wall = WWbit + W;
 	HaffmanCompressor();
-	~HaffmanCompressor() { dfs_clear(result); };
+	~HaffmanCompressor() { delete result; }//dfs_clear(result); };
 
+	bool iscomress() const { return compressing; }
+	bool isdecomress() const { return decompressing; }
 	pair<void*, size_t> compress(pair<void*, size_t> arg);
 	void add_chunk(pair<void*, size_t> arg);
 	pair<void*, size_t> prepare();
-	pair<void*, size_t> compress_chunk(pair<void*, size_t> arg);
+	pair<void*, size_t> compress_chunk(pair<void*, size_t> arg) ;
 
 	bool try_decompress_codes(pair<void*, size_t> arg);
 	pair<void*, size_t> decompress(pair<void*, size_t> arg);

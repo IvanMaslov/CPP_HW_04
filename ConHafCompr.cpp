@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <random>
+#include <cstring>
 #include "HaffmanCompressor.h"
 using namespace std;
 
@@ -35,6 +36,7 @@ void compress(string in_name, string out_name, size_t chunksize = 1024) {
 	if (!outfile.is_open()) {
 		std::cerr << "ERROR while open file: " << in_name << " " << std::endl;
 		exit(0);
+
 	}
 	char* buf = new char[chunksize];
 	size_t bufsize = 0;
@@ -53,29 +55,34 @@ void compress(string in_name, string out_name, size_t chunksize = 1024) {
 	infile.close();
 	infile.open(in_name.c_str(), std::ios_base::binary);
 	
-	char* prepared_data;
-	prepared_data = (char*)compressor.prepare().first;
-	outfile.write(static_cast<const char*>(prepared_data), compressor.Wall);
-	delete[] prepared_data;
-
+	try {
+		char* prepared_data;
+		prepared_data = (char*)compressor.prepare().first;
+		outfile.write(static_cast<const char*>(prepared_data), compressor.Wall);
+		delete[] prepared_data;
+	}
+	catch (exception e) {
+		std::cerr << "Error while prepare tree : \n\t " << e.what() << std::endl;
+		exit(0);
+	}
 	while (!infile.eof()) {
 		buf[bufsize++] = infile.get();
-#ifndef LOMAY_MOY_KOD
 		if (infile.eof()) {
 			bufsize--;
 			break;
 		}
-#endif
 		if (bufsize == chunksize) {
 			std::pair<void*, size_t> res = compressor.compress_chunk(std::make_pair(buf, bufsize));
 			outfile.write(static_cast<const char*>(res.first), res.second);
 			bufsize = 0;
+			delete[] res.first;
 		}
 	}
 	if (bufsize) {
 		std::pair<void*, size_t> res = compressor.compress_chunk(std::make_pair(buf, bufsize));
 		outfile.write(static_cast<const char*>(res.first), res.second);
 		bufsize = 0;
+		delete[] res.first;
 	}
 
 	delete[] buf;
@@ -90,6 +97,7 @@ void compress(string in_name, string out_name, size_t chunksize = 1024) {
 	while (!infile.eof()) {
 		buf[bufsize++] = infile.get();
 		if (bufsize == compressor.Wall) {
+			std::cerr << "CHECKs\n";
 			if (!compressor.try_decompress_codes((std::make_pair(buf, bufsize)))) {
 				std::cerr << "ERROR file:" << in_name << " is broken" << std::endl;
 				exit(0);
@@ -123,33 +131,48 @@ void newdecompress(string in_name, string out_name, size_t chunksize = 1024) {
 	size_t bufsize = 0;
 	while (!infile.eof()) {
 		buf[bufsize++] = infile.get();
-#ifndef LOMAY_MOY_KOD
 		if (infile.eof()) {
 			bufsize--;
 			break;
 		}
-#endif
 		if (bufsize == chunksize) {
-			std::pair<void*, size_t> res = decompressor.decompress_data(std::make_pair(buf, bufsize));
+			pair<void*, size_t> res;
+			try {
+				res = decompressor.decompress_data(std::make_pair(buf, bufsize));
+			}
+			catch (exception const e) {
+				cerr << e.what() << endl;
+				exit(0);
+			}
 			outfile.write(static_cast<const char*>(res.first), res.second);
 			bufsize = 0;
+			delete[] res.first;
 		}
 	}
 	if (bufsize) {
-		std::pair<void*, size_t> res = decompressor.decompress_data(std::make_pair(buf, bufsize));
+		pair<void*, size_t> res;
+		try {
+			res = decompressor.decompress_data(std::make_pair(buf, bufsize));
+		}
+		catch (exception const e) {
+			cerr << e.what() << endl;
+			exit(0);
+		}
 		outfile.write(static_cast<const char*>(res.first), res.second);
 		bufsize = 0;
+		delete[] res.first;
 	}
 
-	delete[] buf;
+	//delete[] buf;
 	
 	infile.close();
 	outfile.close();
-}
 
+}
 void decompress(string in_name, string out_name) {
 	newdecompress(in_name, out_name);
 	return;
+//#define __EDITION001
 #ifdef __EDITION001
 	HaffmanCompressor decompressor;
 	std::ifstream infile;
@@ -212,7 +235,7 @@ void decompress(string in_name, string out_name) {
 #endif //__EDITION001
 }
 
-int main(int argc, char* argv[]) {
+int Util(int argc, char* argv[]) {
 	if (argc == 1) {
 		std::cerr << "ConHafCompr [options] --mode={encode|decode|debug} sourse destination " << std::endl;
 		return 0;
@@ -238,3 +261,25 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
+#ifdef _DEBUG
+#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
+#endif
+#define _LEACKS
+#ifdef _LEACKS
+#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
+#endif
+void testUtil(int argc, char* argv[]) {
+	_CrtMemState _ms;
+	_CrtMemCheckpoint(&_ms);
+	_CrtMemDumpAllObjectsSince(&_ms);
+
+	Util(argc, argv);
+
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
+	_CrtDumpMemoryLeaks();
+}
+
+int main(int argc, char* argv[]) { testUtil(argc, argv); }
