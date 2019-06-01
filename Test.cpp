@@ -63,7 +63,6 @@ void combo_test(pair<void*, size_t> a, size_t chunk, bool out = true) {
 		r.second += ads.second;
 		
 	}
-
 	assert(a.second == r.second);
 	assert(memcmp(r.first, a.first, a.second) == 0);
 	std::cerr << "DECOMPRESSED: in=" << a.second << " out=" << rtt.second << " zip=" << (1.0 * rtt.second / a.second) << std::endl;
@@ -277,3 +276,5 @@ void test() {
 	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
 	_CrtDumpMemoryLeaks();
 }
+
+//int main() { test(); }

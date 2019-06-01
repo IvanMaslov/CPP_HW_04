@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
 			decompress(argv[2], argv[3]);
 		}
 		if (strcmp(argv[1], "--mode=debug") == 0) {
-			fillfile(argv[2], 1488322);
+			fillfile(argv[2], 228322);
 			compress(argv[2], "temp");
 			decompress("temp", argv[3]);
 			//system("pause");
