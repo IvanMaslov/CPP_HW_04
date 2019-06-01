@@ -1,14 +1,31 @@
 #include <iostream>
 #include <fstream>
+#include <random>
 #include "HaffmanCompressor.h"
-//#include "Test.cpp"
-
 using namespace std;
+
+void fillfile(string name, size_t len = 1024, size_t chunk = 1024) {
+	std::ofstream outfile;
+	outfile.open(name, ios::binary);
+	std::random_device dv;
+	std::mt19937 r(dv()); 
+	std::uniform_int_distribution<> dis(0, 255);
+	char* buf = new char[chunk];
+	for (size_t i = 0; i < len; ) {
+		size_t cur;
+		for (cur = 0; cur < chunk && i < len; ++cur, ++i)
+			buf[cur] = dis(r);
+		outfile.write(buf, cur);
+	}
+	delete[] buf;
+	outfile.close();
+}
 
 void compress(string in_name, string out_name, size_t chunksize = 1024) {
 	HaffmanCompressor compressor;
 	std::ifstream infile;
 	std::ofstream outfile;
+
 	infile.open(in_name.c_str(), std::ios_base::binary);
 	outfile.open(out_name.c_str(), std::ios_base::binary);
 	if (!infile.is_open()) {
@@ -19,7 +36,6 @@ void compress(string in_name, string out_name, size_t chunksize = 1024) {
 		std::cerr << "ERROR while open file: " << in_name << " " << std::endl;
 		exit(0);
 	}
-
 	char* buf = new char[chunksize];
 	size_t bufsize = 0;
 	while (!infile.eof()) {
@@ -44,6 +60,12 @@ void compress(string in_name, string out_name, size_t chunksize = 1024) {
 
 	while (!infile.eof()) {
 		buf[bufsize++] = infile.get();
+#ifndef LOMAY_MOY_KOD
+		if (infile.eof()) {
+			bufsize--;
+			break;
+		}
+#endif
 		if (bufsize == chunksize) {
 			std::pair<void*, size_t> res = compressor.compress_chunk(std::make_pair(buf, bufsize));
 			outfile.write(static_cast<const char*>(res.first), res.second);
@@ -55,7 +77,6 @@ void compress(string in_name, string out_name, size_t chunksize = 1024) {
 		outfile.write(static_cast<const char*>(res.first), res.second);
 		bufsize = 0;
 	}
-
 
 	delete[] buf;
 	infile.close();
@@ -102,47 +123,17 @@ void decompress(string in_name, string out_name) {
 
 	char* buf = new char[decompressor.Wall];
 	size_t bufsize = 0;
-#define __N2
-#ifdef __N1
-	while (!infile.eof()) {
-		buf[bufsize++] = infile.get();
-		if (bufsize == decompressor.Wall) {
-			if (!decompressor.try_decompress_codes((std::make_pair(buf, bufsize)))) {
-				std::cerr << "ERROR file:" << in_name << " is broken" << std::endl;
-				exit(0);
-			}
-			bufsize = 0;
-			break;
-		}
-	}
-#endif __N1
-#ifdef __N2
 	bufsize = decompressor.Wall;
 	infile.read(buf, bufsize);
 	if (!decompressor.try_decompress_codes((std::make_pair(buf, bufsize)))) {
 		std::cerr << "ERROR file:" << in_name << " is broken" << std::endl;
 		exit(0);
 	}
-#endif __N1
 
 	delete[] buf;
 	bufsize = 0;
 
 	while (!infile.eof()) {
-#define __L2
-#ifdef __L1
-		void* data = static_cast<void*>(new size_t);
-		infile.get((char*)data, sizeof(size_t));
-		if (infile.eof()) break;
-		size_t u = *static_cast<size_t*>(data);
-
-		u = (u >> 3) + ((u & 7) > 0);
-		buf = new char[u + sizeof(size_t)];
-		memcpy(buf, data, sizeof(size_t));
-		delete static_cast<size_t*>(data);
-		infile.get(buf + sizeof(size_t), u);
-#endif //__L1
-#ifdef __L2
 		infile.read(((char*)(&bufsize)), sizeof(size_t));
 		if (infile.eof()) break;
 		size_t u = bufsize;
@@ -150,8 +141,6 @@ void decompress(string in_name, string out_name) {
 		buf = new char[u + sizeof(size_t)];
 		((size_t*)(buf))[0] = bufsize;
 		infile.read(buf + sizeof(size_t), u);
-#endif //__L2
-
 
 		pair<void*, size_t> d;
 #ifdef _DEBUG
@@ -180,7 +169,7 @@ void decompress(string in_name, string out_name) {
 
 int main(int argc, char* argv[]) {
 	if (argc == 1) {
-		std::cerr << "ConHafCompr [options] --mode={encode|decode} sourse destination " << std::endl;
+		std::cerr << "ConHafCompr [options] --mode={encode|decode|debug} sourse destination " << std::endl;
 		return 0;
 	}
 	if (argc == 4) {
@@ -189,7 +178,12 @@ int main(int argc, char* argv[]) {
 		}
 		if (strcmp(argv[1], "--mode=decode") == 0) {
 			decompress(argv[2], argv[3]);
-			system("pause");
+		}
+		if (strcmp(argv[1], "--mode=debug") == 0) {
+			fillfile(argv[2], 1488322);
+			compress(argv[2], "temp");
+			decompress("temp", argv[3]);
+			//system("pause");
 		}
 		return 0;
 	}

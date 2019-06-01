@@ -102,8 +102,10 @@ pair<void*, size_t> HaffmanCompressor::prepare()
 	size_t index = 0;
 	result->count = 0;
 	dfs_set(result, index, 0);
+#ifdef _DEBUG
 	assert(index == WW);
 	assert(res_char.size() == W);
+#endif
 	char* res = new char[Wall];
 	memset(res, 0, Wall);
 	for (size_t i = 0; i < WW; ++i)
@@ -184,8 +186,10 @@ bool HaffmanCompressor::try_decompress_codes(pair<void*, size_t> arg)
 		dfs_clear(result);
 		return false;
 	}
+#ifdef _DEBUG
 	if(compressing)
 		__DEBUG__ISOMORPH(result, res_cop);
+#endif
 	dfs_clear(res_cop);
 	return true;
 }
