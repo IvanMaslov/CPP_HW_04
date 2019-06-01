@@ -10,6 +10,7 @@ class HaffmanCompressor
 	static const size_t WWbit = WW / 8 + (WW % 8 > 0);
 	bitset<WW> res_tree;
 	vector<char> res_char;
+	deque<char> q;
 	bool decompressing = false;
 	bool compressing = false;
 	struct node {
@@ -46,4 +47,5 @@ public:
 	bool try_decompress_codes(pair<void*, size_t> arg);
 	pair<void*, size_t> decompress(pair<void*, size_t> arg);
 	pair<void*, size_t> decompress_chunk(pair<void*, size_t> arg);
+	pair<void*, size_t> decompress_data(pair<void*, size_t> arg);
 };

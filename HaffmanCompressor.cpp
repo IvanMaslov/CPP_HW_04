@@ -223,3 +223,58 @@ pair<void*, size_t> HaffmanCompressor::decompress_chunk(pair<void*, size_t> arg)
 		res[i] = ans[i] - 128;
 	return _mp(res, ans.size());
 }
+
+pair<void*, size_t> HaffmanCompressor::decompress_data(pair<void*, size_t> arg)
+{
+	for (size_t i = 0; i < arg.siz; ++i)
+		q.push_back(static_cast<char*>(arg.ref)[i]);
+	if (!decompressing) {
+		if (q.size() >= Wall) {
+			char t[Wall];
+			for (size_t i = 0; i < Wall; ++i) {
+				t[i] = q.front();
+				q.pop_front();
+			}
+			if(!try_decompress_codes(make_pair(t, sizeof(t)))){
+				throw exception("ERROR: No valid prepared data");
+			}
+		}
+		else {
+			return make_pair(nullptr, 0);
+		}
+	}
+	vector<char> ans;
+	while (!q.empty()) {
+		size_t y = 0;
+		char* t = (char*)& y;
+		if (q.size() < sizeof(size_t))
+			return make_pair(nullptr, 0);
+		for (size_t i = 0; i < sizeof(size_t); ++i) {
+			t[i] = q.front();
+			q.pop_front();
+		}
+		size_t Y = (y >> 3) + ((y & 7) > 0);
+		if (q.size() < Y) {
+			for (size_t i = 0; i < sizeof(size_t); ++i) {
+				q.push_front(t[sizeof(size_t) - 1 - i]);
+			}
+			break;
+		}
+		char* dat = new char[sizeof(size_t) + Y];
+		for (size_t i = 0; i < sizeof(size_t); ++i) {
+			dat[i] = t[i];
+		}
+		for (size_t i = 0; i < Y; ++i) {
+			dat[sizeof(size_t) + i] = q.front();
+			q.pop_front();
+		}
+		auto c = decompress_chunk(make_pair(dat, Y + sizeof(size_t)));
+		for (size_t i = 0; i < c.second; ++i)
+			ans.push_back(static_cast<char*>(c.first)[i]);
+		delete[] c.first;
+	}
+	char* e = new char[ans.size()];
+	for (size_t i = 0; i < ans.size(); ++i)
+		e[i] = ans[i];
+	return make_pair(e, ans.size());
+}

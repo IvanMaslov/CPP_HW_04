@@ -104,9 +104,53 @@ void compress(string in_name, string out_name, size_t chunksize = 1024) {
 #endif // _DEBUG
 }
 
+void newdecompress(string in_name, string out_name, size_t chunksize = 1024) {
+	HaffmanCompressor decompressor;
+	std::ifstream infile;
+	std::ofstream outfile;
+	infile.open(in_name.c_str(), std::ios_base::binary);
+	outfile.open(out_name.c_str(), std::ios_base::binary);
+	if (!infile.is_open()) {
+		std::cerr << "ERROR while open file: " << in_name << " " << std::endl;
+		exit(0);
+	}
+	if (!outfile.is_open()) {
+		std::cerr << "ERROR while open file: " << in_name << " " << std::endl;
+		exit(0);
+	}
 
+	char* buf = new char[chunksize];
+	size_t bufsize = 0;
+	while (!infile.eof()) {
+		buf[bufsize++] = infile.get();
+#ifndef LOMAY_MOY_KOD
+		if (infile.eof()) {
+			bufsize--;
+			break;
+		}
+#endif
+		if (bufsize == chunksize) {
+			std::pair<void*, size_t> res = decompressor.decompress_data(std::make_pair(buf, bufsize));
+			outfile.write(static_cast<const char*>(res.first), res.second);
+			bufsize = 0;
+		}
+	}
+	if (bufsize) {
+		std::pair<void*, size_t> res = decompressor.decompress_data(std::make_pair(buf, bufsize));
+		outfile.write(static_cast<const char*>(res.first), res.second);
+		bufsize = 0;
+	}
+
+	delete[] buf;
+	
+	infile.close();
+	outfile.close();
+}
 
 void decompress(string in_name, string out_name) {
+	newdecompress(in_name, out_name);
+	return;
+#ifdef __EDITION001
 	HaffmanCompressor decompressor;
 	std::ifstream infile;
 	std::ofstream outfile;
@@ -165,6 +209,7 @@ void decompress(string in_name, string out_name) {
 
 	infile.close();
 	outfile.close();
+#endif //__EDITION001
 }
 
 int main(int argc, char* argv[]) {
@@ -180,7 +225,9 @@ int main(int argc, char* argv[]) {
 			decompress(argv[2], argv[3]);
 		}
 		if (strcmp(argv[1], "--mode=debug") == 0) {
-			fillfile(argv[2], 228322);
+			size_t size = 1337 * 228;
+			//std::cerr << "len: " << size << " : " ;
+			fillfile(argv[2], size);
 			compress(argv[2], "temp");
 			decompress("temp", argv[3]);
 			//system("pause");
