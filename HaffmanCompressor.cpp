@@ -7,14 +7,6 @@
 #define ref first
 #define siz second
 #define _mp(x, y) make_pair(x, y)
-void HaffmanCompressor::dfs_clear(node* arg)
-{
-	if (arg == nullptr) return;
-	if (arg->l != nullptr)dfs_clear(arg->l);
-	if (arg->r != nullptr)dfs_clear(arg->r);
-	delete arg;
-}
-
 void HaffmanCompressor::dfs_set(node* arg, size_t& pos, char rang)
 {
 	if (arg == nullptr) return;
@@ -54,37 +46,41 @@ bool HaffmanCompressor::__DEBUG__ISOMORPH(node* a, node* b)
 HaffmanCompressor::HaffmanCompressor()
 {
 	result = nullptr;
-	for (size_t i = 0; i < W; ++i)
-		cnt[i] = new node(static_cast<char>(i));
+	for (size_t i = 0; i < W; ++i) {
+		cnt[i] = nullptr;
+		cnt_char[i] = 0;
+	}
 }
 
-pair<void*, size_t> HaffmanCompressor::compress(pair<void*, size_t> arg) {
+pair<char*, size_t> HaffmanCompressor::compress(pair<char*, size_t> arg) {
 	add_chunk(arg);
-	pair<void*, size_t> res1 = prepare();
-	pair<void*, size_t> res2 = compress_chunk(arg);
+	pair<char*, size_t> res1 = prepare();
+	pair<char*, size_t> res2 = compress_chunk(arg);
 	char* res = new char[res1.siz + res2.siz];
 	memcpy(res, res1.ref, res1.siz);
 	memcpy(res + res1.siz, res2.ref, res2.siz);
-	delete[](char*)res1.ref;
-	delete[](char*)res2.ref;
+	delete[] res1.ref;
+	delete[] res2.ref;
 	return _mp(res, res1.siz + res2.siz);
 }
 
-void HaffmanCompressor::add_chunk(pair<void*, size_t> arg)
+void HaffmanCompressor::add_chunk(pair<char*, size_t> arg)
 {
 	if (compressing)
-		throw new runtime_error("ERROR: add_chunk() while compressing");
+		throw runtime_error("ERROR: add_chunk() while compressing");
 	for (size_t i = 0; i < arg.siz; ++i)
-		++(cnt[(((char*)arg.ref)[i]) + 128]->count);
+		cnt_char[(((char*)arg.ref)[i]) + 128]++;
 }
 
-pair<void*, size_t> HaffmanCompressor::prepare()
+pair<char*, size_t> HaffmanCompressor::prepare()
 {
 	if (compressing)
-		throw new runtime_error("ERROR: prepare() used second time");
+		throw runtime_error("ERROR: prepare() used second time");
 	compressing = true;
 	set<pair<pair<size_t, char>, node*>> s;
 	for (size_t i = 0; i < W; ++i) {
+		cnt[i] = new node(i);
+		cnt[i]->count = cnt_char[i];
 		s.insert(make_pair(make_pair(cnt[i]->count, cnt[i]->val), cnt[i]));
 	}
 	while (s.size() > 1) {
@@ -115,10 +111,10 @@ pair<void*, size_t> HaffmanCompressor::prepare()
 	return _mp(res, Wall);
 }
 
-pair<void*, size_t> HaffmanCompressor::compress_chunk(pair<void*, size_t> arg)
+pair<char*, size_t> HaffmanCompressor::compress_chunk(pair<char*, size_t> arg)
 {
 	if (!compressing)
-		throw new runtime_error("ERROR: compress_chunk() without preparing");
+		throw runtime_error("ERROR: compress_chunk() without preparing");
 	vector<char> ans;
 	char bf = 0;
 	char size_bf = 8;
@@ -144,7 +140,7 @@ pair<void*, size_t> HaffmanCompressor::compress_chunk(pair<void*, size_t> arg)
 	return _mp(res, sizeof(size_t) + ans.size());
 }
 
-bool HaffmanCompressor::try_decompress_codes(pair<void*, size_t> arg)
+bool HaffmanCompressor::try_decompress_codes(pair<char*, size_t> arg)
 {
 	if(decompressing)
 		return false;
@@ -152,8 +148,7 @@ bool HaffmanCompressor::try_decompress_codes(pair<void*, size_t> arg)
 
 	if (arg.second != Wall)
 		return false;
-	dfs_clear(result);
-	//node* res_cop = result; result = nullptr;
+	delete result;
 
 	result = new node();
 	vector<node*> st;
@@ -175,35 +170,30 @@ bool HaffmanCompressor::try_decompress_codes(pair<void*, size_t> arg)
 		}
 		if (!btl && !btr) {
 			if (cnt_alph == W) {
-				dfs_clear(result);
+				delete result;
 				return false;
 			}
 			c->val = (((char*)(arg.ref))[WWbit + cnt_alph++]);
 		}
 	}
 	if (cnt_alph != W) {
-		dfs_clear(result);
+		delete result;
 		return false;
 	}
-#ifdef _DEBUG
-	//if(compressing)
-	//	__DEBUG__ISOMORPH(result, res_cop);
-#endif
-	//dfs_clear(res_cop);
 	return true;
 }
 
-pair<void*, size_t> HaffmanCompressor::decompress(pair<void*, size_t> arg)
+pair<char*, size_t> HaffmanCompressor::decompress(pair<char*, size_t> arg)
 {
-	if(!try_decompress_codes(_mp(arg.ref, Wall))) throw new runtime_error("ERROR: decompress() failed");
-	return decompress_chunk(_mp((void*)(((char*)arg.ref) + Wall), arg.siz - Wall));
+	if(!try_decompress_codes(_mp(arg.ref, Wall))) throw runtime_error("ERROR: decompress() failed");
+	return decompress_chunk(_mp((char*)(((char*)arg.ref) + Wall), arg.siz - Wall));
 }
 #include <iostream>
-pair<void*, size_t> HaffmanCompressor::decompress_chunk(pair<void*, size_t> arg)
+pair<char*, size_t> HaffmanCompressor::decompress_chunk(pair<char*, size_t> arg)
 {
 	size_t len = ((size_t*)(arg.ref))[0];
 	if (len / 8 + (len % 8 != 0) != arg.siz - sizeof(size_t))
-		throw new runtime_error("ERROR: decompress_chunk with different length");
+		throw runtime_error("ERROR: decompress_chunk with different length");
 	vector<char> ans;
 	node* cur = result;
 	for (size_t i = 0; i < len; ++i) {
@@ -223,7 +213,7 @@ pair<void*, size_t> HaffmanCompressor::decompress_chunk(pair<void*, size_t> arg)
 	return _mp(res, ans.size());
 }
 
-pair<void*, size_t> HaffmanCompressor::decompress_data(pair<void*, size_t> arg)
+pair<char*, size_t> HaffmanCompressor::decompress_data(pair<char*, size_t> arg)
 {
 	if (compressing)
 		throw runtime_error("ERROR: decompress_data() while compressing");

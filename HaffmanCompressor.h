@@ -34,25 +34,25 @@ class HaffmanCompressor
 			delete r;
 		}
 	};
+	size_t cnt_char[W];
 	node* cnt[W];
-	node* result;
-	void dfs_clear(node* arg);
+	node* result = nullptr;
 	void dfs_set(node* arg, size_t& pos, char rang);
 	bool __DEBUG__ISOMORPH(node* a, node* b);
 public:
 	static const size_t Wall = WWbit + W;
 	HaffmanCompressor();
-	~HaffmanCompressor() { delete result; }//dfs_clear(result); };
+	~HaffmanCompressor() { delete result; }
 
 	bool iscomress() const { return compressing; }
 	bool isdecomress() const { return decompressing; }
-	pair<void*, size_t> compress(pair<void*, size_t> arg);
-	void add_chunk(pair<void*, size_t> arg);
-	pair<void*, size_t> prepare();
-	pair<void*, size_t> compress_chunk(pair<void*, size_t> arg) ;
+	pair<char*, size_t> compress(pair<char*, size_t> arg);
+	void add_chunk(pair<char*, size_t> arg);
+	pair<char*, size_t> prepare();
+	pair<char*, size_t> compress_chunk(pair<char*, size_t> arg) ;
 
-	bool try_decompress_codes(pair<void*, size_t> arg);
-	pair<void*, size_t> decompress(pair<void*, size_t> arg);
-	pair<void*, size_t> decompress_chunk(pair<void*, size_t> arg);
-	pair<void*, size_t> decompress_data(pair<void*, size_t> arg);
+	bool try_decompress_codes(pair<char*, size_t> arg);
+	pair<char*, size_t> decompress(pair<char*, size_t> arg);
+	pair<char*, size_t> decompress_chunk(pair<char*, size_t> arg);
+	pair<char*, size_t> decompress_data(pair<char*, size_t> arg);
 };
