@@ -41,18 +41,22 @@ class HaffmanCompressor
 	bool __DEBUG__ISOMORPH(node* a, node* b);
 public:
 	static const size_t Wall = WWbit + W;
+	
 	HaffmanCompressor();
 	~HaffmanCompressor() { delete result; }
-
+	
+	void clear();
+	
 	bool iscomress() const { return compressing; }
 	bool isdecomress() const { return decompressing; }
-	pair<char*, size_t> compress(pair<char*, size_t> arg);
+	
 	void add_chunk(pair<char*, size_t> arg);
 	pair<char*, size_t> prepare();
-	pair<char*, size_t> compress_chunk(pair<char*, size_t> arg) ;
+	pair<char*, size_t> compress_chunk(pair<char*, size_t> arg);
+	pair<char*, size_t> compress(pair<char*, size_t> arg);
 
 	bool try_decompress_codes(pair<char*, size_t> arg);
-	pair<char*, size_t> decompress(pair<char*, size_t> arg);
 	pair<char*, size_t> decompress_chunk(pair<char*, size_t> arg);
 	pair<char*, size_t> decompress_data(pair<char*, size_t> arg);
+	pair<char*, size_t> decompress(pair<char*, size_t> arg);
 };

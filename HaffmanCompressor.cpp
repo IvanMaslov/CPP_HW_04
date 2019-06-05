@@ -52,6 +52,20 @@ HaffmanCompressor::HaffmanCompressor()
 	}
 }
 
+void HaffmanCompressor::clear()
+{
+	q.clear();
+	res_char.clear();
+	res_tree.reset();
+	delete result;
+	compressing = decompressing = false;
+	result = nullptr;
+	for (size_t i = 0; i < W; ++i) {
+		cnt[i] = nullptr;
+		cnt_char[i] = 0;
+	}
+}
+
 pair<char*, size_t> HaffmanCompressor::compress(pair<char*, size_t> arg) {
 	add_chunk(arg);
 	pair<char*, size_t> res1 = prepare();
@@ -67,7 +81,9 @@ pair<char*, size_t> HaffmanCompressor::compress(pair<char*, size_t> arg) {
 void HaffmanCompressor::add_chunk(pair<char*, size_t> arg)
 {
 	if (compressing)
-		throw runtime_error("ERROR: add_chunk() while compressing");
+		throw runtime_error("ERROR: add_chunk() after prepare compressing");
+	if (decompressing)
+		throw runtime_error("ERROR: add_chunk() while decompressing");
 	for (size_t i = 0; i < arg.siz; ++i)
 		cnt_char[(((char*)arg.ref)[i]) + 128]++;
 }
@@ -76,6 +92,8 @@ pair<char*, size_t> HaffmanCompressor::prepare()
 {
 	if (compressing)
 		throw runtime_error("ERROR: prepare() used second time");
+	if (decompressing)
+		throw runtime_error("ERROR: prepare() while decompressing");
 	compressing = true;
 	set<pair<pair<size_t, char>, node*>> s;
 	for (size_t i = 0; i < W; ++i) {
@@ -115,6 +133,8 @@ pair<char*, size_t> HaffmanCompressor::compress_chunk(pair<char*, size_t> arg)
 {
 	if (!compressing)
 		throw runtime_error("ERROR: compress_chunk() without preparing");
+	if (decompressing)
+		throw runtime_error("ERROR: compress_chunk() while decompressing");
 	vector<char> ans;
 	char bf = 0;
 	char size_bf = 8;
@@ -144,7 +164,6 @@ bool HaffmanCompressor::try_decompress_codes(pair<char*, size_t> arg)
 {
 	if(decompressing)
 		return false;
-	decompressing = true;
 
 	if (arg.second != Wall)
 		return false;
@@ -180,6 +199,8 @@ bool HaffmanCompressor::try_decompress_codes(pair<char*, size_t> arg)
 		delete result;
 		return false;
 	}
+	decompressing = true;
+	compressing = false;
 	return true;
 }
 
@@ -191,6 +212,10 @@ pair<char*, size_t> HaffmanCompressor::decompress(pair<char*, size_t> arg)
 #include <iostream>
 pair<char*, size_t> HaffmanCompressor::decompress_chunk(pair<char*, size_t> arg)
 {
+	if (compressing)
+		throw runtime_error("ERROR: decompress_chunk() while compressing");
+	if (!decompressing)
+		throw runtime_error("ERROR: decompress_chunk() without preparing: try_decompress_code()");
 	size_t len = ((size_t*)(arg.ref))[0];
 	if (len / 8 + (len % 8 != 0) != arg.siz - sizeof(size_t))
 		throw runtime_error("ERROR: decompress_chunk with different length");
@@ -209,13 +234,13 @@ pair<char*, size_t> HaffmanCompressor::decompress_chunk(pair<char*, size_t> arg)
 	}
 	char* res = new char[ans.size()];
 	for (size_t i = 0; i < ans.size(); ++i)
-		res[i] = static_cast<char>(ans[i] - 128);
+		res[i] = static_cast<char>(ans[i] - (char)128);
 	return _mp(res, ans.size());
 }
 
 pair<char*, size_t> HaffmanCompressor::decompress_data(pair<char*, size_t> arg)
 {
-	if (compressing)
+	if (compressing) 
 		throw runtime_error("ERROR: decompress_data() while compressing");
 	for (size_t i = 0; i < arg.siz; ++i)
 		q.push_back(static_cast<char*>(arg.ref)[i]);

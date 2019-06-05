@@ -1,5 +1,15 @@
+#!/bin/bash
+
 Compare() {
-	cmp --silent a b || (echo "DIFFERENT FILES!" && exit)
+	#cmp --silent a b || (echo "DIFFERENT FILES!" && exit)
+	if cmp --silent a b
+	then
+	echo "OK"
+	else
+	echo "DIFFERENT FILES!"
+	sleep 7
+	exit
+	fi
 }
 
 do_test() {

@@ -184,7 +184,7 @@ int Util(int argc, char* argv[]) {
 			decompress(argv[2], argv[3]);
 		}
 		else if (strcmp(argv[1], "--mode=debug") == 0) {
-			const size_t size = 512 * 1024 + 256 + 12;
+			const size_t size = 24 * 1024 + 256 + 13;
 			std::cerr << "FILL FILES: (len=" << size << ")\n" ;
 			fillfile(argv[2], size);
 			compress(argv[2], "temp");
