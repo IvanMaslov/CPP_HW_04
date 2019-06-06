@@ -177,6 +177,11 @@ bool HaffmanCompressor::try_decompress_codes(pair<char*, size_t> arg)
 		bool btl = (((char*)(arg.ref))[(i >> 3)] >> (i & 7)) & 1;
 		++i;
 		bool btr = (((char*)(arg.ref))[(i >> 3)] >> (i & 7)) & 1;
+		if (st.empty()) {
+			delete result;
+			result = nullptr;
+			return false;
+		}
 		node* c = st.back();
 		st.pop_back();
 		if (btr) {
@@ -190,6 +195,7 @@ bool HaffmanCompressor::try_decompress_codes(pair<char*, size_t> arg)
 		if (!btl && !btr) {
 			if (cnt_alph == W) {
 				delete result;
+				result = nullptr;
 				return false;
 			}
 			c->val = (((char*)(arg.ref))[WWbit + cnt_alph++]);
@@ -197,6 +203,7 @@ bool HaffmanCompressor::try_decompress_codes(pair<char*, size_t> arg)
 	}
 	if (cnt_alph != W) {
 		delete result;
+		result = nullptr;
 		return false;
 	}
 	decompressing = true;
@@ -209,7 +216,7 @@ pair<char*, size_t> HaffmanCompressor::decompress(pair<char*, size_t> arg)
 	if(!try_decompress_codes(_mp(arg.ref, Wall))) throw runtime_error("ERROR: decompress() failed");
 	return decompress_chunk(_mp((char*)(((char*)arg.ref) + Wall), arg.siz - Wall));
 }
-#include <iostream>
+
 pair<char*, size_t> HaffmanCompressor::decompress_chunk(pair<char*, size_t> arg)
 {
 	if (compressing)
@@ -264,7 +271,7 @@ pair<char*, size_t> HaffmanCompressor::decompress_data(pair<char*, size_t> arg)
 		size_t y = 0;
 		char* t = (char*)& y;
 		if (q.size() < sizeof(size_t))
-			return make_pair(nullptr, 0);
+			break;
 		for (size_t i = 0; i < sizeof(size_t); ++i) {
 			t[i] = q.front();
 			q.pop_front();
@@ -287,9 +294,11 @@ pair<char*, size_t> HaffmanCompressor::decompress_data(pair<char*, size_t> arg)
 		auto c = decompress_chunk(make_pair(dat, Y + sizeof(size_t)));
 		for (size_t i = 0; i < c.second; ++i)
 			ans.push_back(static_cast<char*>(c.first)[i]);
-		delete[] (char*)c.first;
-		delete[] (char*)dat;
+		delete[] c.first;
+		delete[] dat;
 	}
+	if (ans.empty())
+		return make_pair(nullptr, 0);
 	char* e = new char[ans.size()];
 	for (size_t i = 0; i < ans.size(); ++i)
 		e[i] = ans[i];

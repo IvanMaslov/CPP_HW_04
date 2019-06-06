@@ -3,6 +3,8 @@
 #include <random>
 #include <cstring>
 #include "HaffmanCompressor.h"
+#define _TESTLIB
+
 using namespace std;
 
 void fillfile(string name, size_t len = 1024, size_t chunk = 1024) {
@@ -218,7 +220,9 @@ void testUtil(int argc, char* argv[]) {
 	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
 	_CrtDumpMemoryLeaks();
 }
+#ifndef _TESTLIB
 int main(int argc, char* argv[]) { testUtil(argc, argv); }
+#endif
 #else
 int main(int argc, char* argv[]) { Util(argc, argv); }
 #endif
