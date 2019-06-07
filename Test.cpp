@@ -467,18 +467,18 @@ namespace new_test {
 	void correct_tests() {
 		cerr << "TESTING: correct" << endl;
 
-		assert(correct_test(correct0, "correct0"));
-		assert(correct_test(correct1, "correct1"));
-		assert(correct_test(correct2, "correct2"));
-		assert(correct_test(correct3, "correct3"));
-		assert(correct_test(correct4, "correct4"));
-		assert(correct_test(correct5, "correct5"));
-		assert(correct_test(correct6, "correct6"));
+		assert(correct_test(correct0, "cor0"));
+		assert(correct_test(correct1, "cor1"));
+		assert(correct_test(correct2, "cor2"));
+		assert(correct_test(correct3, "cor3"));
+		assert(correct_test(correct4, "cor4"));
+		assert(correct_test(correct5, "cor5"));
+		assert(correct_test(correct6, "cor6"));
 
 
-		assert(correct_test(correct7, "correct7.1"));
-		assert(correct_test(correct7, "correct7.2"));
-		assert(correct_test(correct7, "correct7.3"));
+		assert(correct_test(correct7, "cor7.1"));
+		assert(correct_test(correct7, "cor7.2"));
+		assert(correct_test(correct7, "cor7.3"));
 
 		cerr << "TESTS PASSED: correct" << endl;
 
