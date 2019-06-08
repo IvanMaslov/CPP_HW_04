@@ -10,6 +10,8 @@
 #endif
 
 #include "HaffmanCompressor.h"
+
+/*
 namespace old_test {
 	void short_code(pair<char*, size_t> a, bool out = true) {
 		HaffmanCompressor c;
@@ -280,7 +282,7 @@ namespace old_test {
 	}
 
 	int main() { testLib(); return 0; }
-}
+}*/
 
 
 

@@ -7,6 +7,9 @@
 #define ref first
 #define siz second
 #define _mp(x, y) make_pair(x, y)
+
+const size_t HaffmanCompressor::Wall;
+
 void HaffmanCompressor::dfs_set(node* arg, size_t& pos, char rang)
 {
 	if (arg == nullptr) return;

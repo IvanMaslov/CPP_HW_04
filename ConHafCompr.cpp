@@ -74,14 +74,14 @@ void compress(string in_name, string out_name, size_t chunksize = 1024) {
 			break;
 		}
 		if (bufsize == chunksize) {
-			std::pair<void*, size_t> res = compressor.compress_chunk(std::make_pair(buf, bufsize));
+			std::pair<char*, size_t> res = compressor.compress_chunk(std::make_pair(buf, bufsize));
 			outfile.write(static_cast<const char*>(res.first), res.second);
 			bufsize = 0;
 			delete[] res.first;
 		}
 	}
 	if (bufsize) {
-		std::pair<void*, size_t> res = compressor.compress_chunk(std::make_pair(buf, bufsize));
+		std::pair<char*, size_t> res = compressor.compress_chunk(std::make_pair(buf, bufsize));
 		outfile.write(static_cast<const char*>(res.first), res.second);
 		bufsize = 0;
 		delete[]res.first;
@@ -139,7 +139,7 @@ void decompress(string in_name, string out_name, size_t chunksize = 1024) {
 			break;
 		}
 		if (bufsize == chunksize) {
-			pair<void*, size_t> res;
+			pair<char*, size_t> res;
 			try {
 				res = decompressor.decompress_data(std::make_pair(buf, bufsize));
 			}
@@ -153,7 +153,7 @@ void decompress(string in_name, string out_name, size_t chunksize = 1024) {
 		}
 	}
 	if (bufsize) {
-		pair<void*, size_t> res;
+		pair<char*, size_t> res;
 		try {
 			res = decompressor.decompress_data(std::make_pair(buf, bufsize));
 		}
