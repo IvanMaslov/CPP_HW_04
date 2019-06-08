@@ -604,6 +604,7 @@ namespace new_test {
 	}
 
 	void testLib() {
+#ifdef _DEBUG
 		_CrtMemState _ms;
 		_CrtMemCheckpoint(&_ms);
 		testing();
@@ -611,8 +612,12 @@ namespace new_test {
 		_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
 		_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
 		_CrtDumpMemoryLeaks();
+#else
+		testing();
+#endif
 	}
 
 }
-
+#ifdef _DEBUG
 int main() { new_test::testLib(); return 0; }
+#endif
